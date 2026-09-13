@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Z8™ Manager - Quản lý Nhập Tắt Excel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            excel: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              200: '#bbf7d0',
+              600: '#16a34a',
+              700: '#15803d',
+              800: '#107c41',
+              900: '#064e3b',
+            },
+            primary: '#107c41',
+            dark: {
+              900: '#0f172a',
+              800: '#1e293b',
+              700: '#334155',
+            },
+          },
+          fontFamily: {
+            sans: ['"Segoe UI"', '-apple-system', 'BlinkMacSystemFont', 'Roboto', 'sans-serif'],
+            mono: ['Consolas', 'Monaco', 'Courier New', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom Excel Spreadsheet Styling */
+    .excel-table th {
+      background-color: #f1f5f9;
+      color: #0f172a;
+      border: 1px solid #cbd5e1;
+    }
+    .dark .excel-table th {
+      background-color: #1e293b;
+      color: #34d399;
+      border-color: #334155;
+    }
+    .excel-table td {
+      border: 1px solid #e2e8f0;
+    }
+    .dark .excel-table td {
+      border-color: #334155;
+    }
+    .excel-row-num {
+      background-color: #f8fafc;
+      color: #64748b;
+      font-family: monospace;
+      text-align: center;
+      user-select: none;
+    }
+    .dark .excel-row-num {
+      background-color: #0f172a;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 dark:bg-dark-900 text-slate-800 dark:text-slate-200 transition-colors duration-300 min-h-screen flex flex-col font-sans select-none">
+  
+  <!-- ==================== TOP EXCEL HEADER BAR (MOBILE OPTIMIZED) ==================== -->
+  <header class="bg-excel-800 text-white flex items-center justify-between px-2.5 sm:px-3 py-1.5 shadow-md z-30 flex-shrink-0">
+    <div class="flex items-center space-x-2">
+      <div class="w-6 h-6 bg-white text-excel-800 rounded flex items-center justify-center font-black text-xs shadow-xs">X</div>
+      <div class="flex items-center gap-1.5">
+        <a href="index.html" class="text-sm sm:text-base font-black text-white tracking-wide hover:opacity-90">Z8™ Manager</a>
+        <span class="hidden sm:inline-block text-[10px] bg-emerald-900/60 text-emerald-200 px-1.5 py-0.5 rounded font-mono border border-emerald-700/50">QUẢN LÝ NHẬP TẮT</span>
+      </div>
+    </div>
+
+    <!-- Right Header Actions (Compact on Mobile) -->
+    <div class="flex items-center space-x-1.5 sm:space-x-2 text-xs">
+      <button id="toggleConfigBtn" class="bg-emerald-700 hover:bg-emerald-600 text-white px-2 sm:px-2.5 py-1 rounded font-semibold transition-all flex items-center gap-1 active:scale-95 shadow-xs text-[11px] sm:text-xs">
+        <i class="fa-solid fa-gear"></i>
+        <span class="hidden sm:inline">Cấu hình GitHub</span>
+        <span class="sm:hidden">Cấu hình</span>
+      </button>
+
+      <button id="darkModeToggle" class="p-1 sm:px-2 sm:py-0.5 hover:bg-white/20 rounded transition flex items-center gap-1 text-[11px] sm:text-xs" title="Chuyển chế độ Sáng / Tối">
+        <span class="dark:hidden">🌙 Tối</span>
+        <span class="hidden dark:inline">☀️ Sáng</span>
+      </button>
+
+      <a href="index.html" class="bg-white/10 hover:bg-white/20 text-white px-2 sm:px-2.5 py-1 rounded font-semibold transition-all flex items-center gap-1 active:scale-95 text-[11px] sm:text-xs">
+        <i class="fa-solid fa-arrow-left"></i>
+        <span class="hidden sm:inline">Quay lại Tool</span>
+        <span class="sm:hidden">Tool</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- ==================== MAIN WORKSPACE ==================== -->
+  <main class="flex-1 container max-w-6xl mx-auto px-2 sm:px-4 py-3 sm:py-4 space-y-3 sm:space-y-4">
+    
+    <!-- Main Grid Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
+      
+      <!-- LEFT COLUMN: GITHUB CONFIG PANEL -->
+      <div id="githubConfigColumn" class="space-y-3 sm:space-y-4 lg:col-span-1 transition-all duration-300">
+        <div class="bg-white dark:bg-dark-800 rounded-lg shadow-sm border border-slate-300 dark:border-slate-700 p-3 sm:p-4 space-y-3 sm:space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2">
+            <h3 class="font-bold text-xs text-excel-800 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-sliders"></i>
+              <span>Cấu hình GitHub API</span>
+            </h3>
+            <span class="text-[11px] px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400 font-bold border border-emerald-200 dark:border-emerald-900/40">Bảo mật</span>
+          </div>
+          
+          <div class="space-y-3 text-xs">
+            <div>
+              <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">GitHub Token (PAT):</label>
+              <div class="relative">
+                <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxx" 
+                       class="w-full border border-slate-300 dark:border-slate-600 rounded px-3 py-1.5 bg-white dark:bg-dark-700 font-mono focus:ring-2 focus:ring-excel-800 outline-none">
+                <button id="toggleTokenVisibility" class="absolute right-2.5 top-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" title="Ẩn/Hiện token">👁️</button>
+              </div>
+              <p class="text-[10px] text-slate-400 mt-1">Lưu an toàn trong localStorage trình duyệt.</p>
+            </div>
+
+            <div>
+              <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Repository Owner:</label>
+              <input type="text" id="ghOwner" value="doducdungvn"
+                     class="w-full border border-slate-300 dark:border-slate-600 rounded px-3 py-1.5 bg-white dark:bg-dark-700 font-mono focus:ring-2 focus:ring-excel-800 outline-none">
+            </div>
+
+            <div>
+              <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Repository Name:</label>
+              <input type="text" id="ghRepo" value="lucky"
+                     class="w-full border border-slate-300 dark:border-slate-600 rounded px-3 py-1.5 bg-white dark:bg-dark-700 font-mono focus:ring-2 focus:ring-excel-800 outline-none">
+            </div>
+
+            <div>
+              <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Branch:</label>
+              <input type="text" id="ghBranch" value="main"
+                     class="w-full border border-slate-300 dark:border-slate-600 rounded px-3 py-1.5 bg-white dark:bg-dark-700 font-mono focus:ring-2 focus:ring-excel-800 outline-none">
+            </div>
+
+            <div>
+              <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">File Path:</label>
+              <input type="text" id="ghPath" value="nhaptat.txt"
+                     class="w-full border border-slate-300 dark:border-slate-600 rounded px-3 py-1.5 bg-white dark:bg-dark-700 font-mono focus:ring-2 focus:ring-excel-800 outline-none">
+            </div>
+
+            <button id="saveConfigBtn" class="w-full py-2 bg-excel-800 hover:bg-excel-900 text-white font-bold rounded shadow-xs transition-all active:scale-95 flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-floppy-disk"></i>
+              <span>Lưu cấu hình</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/30 rounded-lg p-3 text-xs space-y-2">
+          <h4 class="font-bold text-excel-800 dark:text-emerald-400 flex items-center gap-1.5">
+            <i class="fa-solid fa-circle-info"></i>
+            <span>Hướng dẫn kết nối GitHub</span>
+          </h4>
+          <p class="text-emerald-900 dark:text-emerald-300 leading-relaxed text-[11px]">
+            1. Tạo 1 Personal Access Token (PAT) trên GitHub với quyền ghi <strong>contents/write</strong>.<br>
+            2. Nhập Token & thông tin Repository vào bảng trên.<br>
+            3. Nhấp "Lưu cấu hình", bạn có thể Thêm/Sửa/Xóa viết tắt và đẩy trực tiếp lên GitHub!
+          </p>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: EXCEL WORKSHEET EDITOR & TABLE -->
+      <div id="editorColumn" class="lg:col-span-2 space-y-3 sm:space-y-4 transition-all duration-300">
+        
+        <!-- Action Banner Status Logs -->
+        <div id="statusBanner" class="hidden p-3 rounded-lg text-xs font-bold border transition-all"></div>
+
+        <!-- Excel Worksheet Mode Bar -->
+        <div class="bg-white dark:bg-dark-800 rounded-lg shadow-sm border border-slate-300 dark:border-slate-700 overflow-hidden">
+          <div class="flex items-center justify-between bg-slate-100 dark:bg-dark-700 border-b border-slate-300 dark:border-slate-700 px-2 pt-1 select-none flex-wrap gap-1">
+            
+            <!-- Worksheet Tabs -->
+            <div class="flex gap-1">
+              <button id="tabTableBtn" class="text-xs font-bold bg-white dark:bg-dark-800 text-excel-800 dark:text-emerald-400 border-t-2 border-excel-800 dark:border-emerald-400 border-x border-slate-300 dark:border-slate-600 px-2.5 sm:px-3 py-1.5 rounded-t-md focus:outline-none flex items-center gap-1.5">
+                <i class="fa-solid fa-table"></i>
+                <span>Bảng viết tắt</span>
+              </button>
+              <button id="tabRawBtn" class="text-xs font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 px-2.5 sm:px-3 py-1.5 rounded-t-md focus:outline-none flex items-center gap-1.5 border-t-2 border-transparent">
+                <i class="fa-solid fa-file-code"></i>
+                <span>Văn bản thô (Raw)</span>
+              </button>
+            </div>
+
+            <button id="fetchBtn" class="mb-1 px-2.5 sm:px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-bold transition-all active:scale-95 flex items-center gap-1.5 shadow-xs">
+              <i class="fa-solid fa-arrows-rotate"></i>
+              <span>Đồng bộ</span>
+            </button>
+          </div>
+
+          <!-- Main Table Mode View -->
+          <div id="tableModeView" class="p-2.5 sm:p-3 space-y-3">
+            
+            <!-- Excel Toolbar: Search & Add Bar (Mobile Full Width Stacked) -->
+            <div class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center justify-between bg-slate-50 dark:bg-dark-900/40 p-2 rounded border border-slate-200 dark:border-slate-700">
+              <div class="relative w-full sm:w-72">
+                <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2.5 text-slate-400 text-xs"></i>
+                <input type="text" id="tableSearch" placeholder="Tìm kiếm từ khóa viết tắt..." 
+                       class="w-full border border-slate-300 dark:border-slate-600 rounded pl-8 pr-3 py-1.5 text-xs bg-white dark:bg-dark-700 outline-none focus:ring-1 focus:ring-excel-800">
+              </div>
+              
+              <button id="showAddFormBtn" class="px-3 py-1.5 bg-excel-800 hover:bg-excel-900 text-white rounded text-xs font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5 shadow-xs">
+                <i class="fa-solid fa-plus"></i>
+                <span>Thêm viết tắt mới</span>
+              </button>
+            </div>
+
+            <!-- Inline Add Form (Hidden by default) -->
+            <div id="addFormContainer" class="hidden bg-emerald-50/60 dark:bg-emerald-950/20 p-3 rounded-lg border border-emerald-300 dark:border-emerald-800 space-y-2 text-xs">
+              <h4 class="font-bold text-excel-800 dark:text-emerald-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-pen-to-square"></i>
+                <span>Thêm mới định nghĩa viết tắt</span>
+              </h4>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <input type="text" id="newKey" placeholder="Từ khóa (ví dụ: dd5)" class="border border-slate-300 dark:border-slate-600 rounded p-2 bg-white dark:bg-dark-800 font-mono text-xs outline-none focus:ring-1 focus:ring-excel-800">
+                <input type="text" id="newValue" placeholder="Dãy số (ví dụ: dau5.dit5)" class="border border-slate-300 dark:border-slate-600 rounded p-2 bg-white dark:bg-dark-800 font-mono text-xs outline-none focus:ring-1 focus:ring-excel-800 sm:col-span-2">
+              </div>
+              <div class="flex justify-end gap-2 pt-1">
+                <button id="cancelAddBtn" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 rounded font-semibold transition-all">Hủy</button>
+                <button id="submitAddBtn" class="px-3 py-1.5 bg-excel-800 hover:bg-excel-900 text-white rounded font-bold transition-all flex items-center gap-1">
+                  <i class="fa-solid fa-check"></i>
+                  <span>Lưu nháp</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Excel Spreadsheet Table Grid (Responsive: Card list on Mobile, Table on Desktop) -->
+            <div class="overflow-hidden rounded border border-slate-300 dark:border-slate-700 shadow-inner">
+              <table class="w-full text-left text-xs border-collapse excel-table">
+                <thead class="hidden sm:table-header-group">
+                  <tr class="bg-slate-100 dark:bg-dark-700 text-excel-800 dark:text-emerald-400 uppercase font-bold border-b border-slate-300 dark:border-slate-700">
+                    <th class="py-2 px-2 w-10 text-center excel-row-num">#</th>
+                    <th class="py-2 px-3 w-44">Từ khóa (Key)</th>
+                    <th class="py-2 px-3">Dãy số mở rộng (Value)</th>
+                    <th class="py-2 px-3 w-28 text-right">Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody id="shortcutsTableBody" class="divide-y divide-slate-200 dark:divide-slate-700 bg-white dark:bg-dark-800">
+                  <!-- Dynamic content loaded via JS -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- No Data Message -->
+            <div id="noDataMessage" class="hidden text-center py-8 text-slate-400 dark:text-slate-500 font-medium text-xs">
+              <i class="fa-solid fa-folder-open text-2xl block mb-2 opacity-50"></i>
+              Không tìm thấy định nghĩa viết tắt nào.
+            </div>
+          </div>
+
+          <!-- Raw Mode Textarea View -->
+          <div id="rawModeView" class="hidden p-2.5 sm:p-3">
+            <textarea id="rawTextArea" class="w-full h-[360px] sm:h-[420px] border border-slate-300 dark:border-slate-600 rounded-lg p-3 bg-white dark:bg-dark-700 font-mono text-xs leading-relaxed outline-none focus:ring-2 focus:ring-excel-800 shadow-inner" placeholder="key=value"></textarea>
+          </div>
+        </div>
+
+        <!-- Commit & Publish to GitHub Bar -->
+        <div class="bg-white dark:bg-dark-800 rounded-lg shadow-sm p-3 border border-slate-300 dark:border-slate-700 space-y-3">
+          <div class="flex flex-col sm:flex-row items-center gap-3">
+            <div class="flex-1 w-full text-xs">
+              <label class="block font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Lời nhắn Commit (Lịch sử cập nhật):</label>
+              <input type="text" id="commitMsg" value="Cập nhật nhaptat.txt từ Trình quản lý Z8"
+                     class="w-full border border-slate-300 dark:border-slate-600 rounded px-3 py-2 sm:py-1.5 bg-white dark:bg-dark-700 outline-none focus:ring-2 focus:ring-excel-800 font-sans text-xs">
+            </div>
+            
+            <button id="commitBtn" class="w-full sm:w-auto px-5 py-2.5 bg-excel-800 hover:bg-excel-900 text-white font-bold rounded-lg shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 text-xs">
+              <span id="commitSpinner" class="hidden animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent"></span>
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <span>🚀 Lưu Lên GitHub</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // App State
+    let shortcutsList = [];
+    let currentMode = 'table'; // 'table' | 'raw'
+    let githubFileSha = ''; // Required to perform updates via GitHub contents API
+
+    // Load configurations from LocalStorage
+    function getGhConfig() {
+      return {
+        token: localStorage.getItem('z8_gh_token') || '',
+        owner: localStorage.getItem('z8_gh_owner') || 'doducdungvn',
+        repo: localStorage.getItem('z8_gh_repo') || 'lucky',
+        branch: localStorage.getItem('z8_gh_branch') || 'main',
+        path: localStorage.getItem('z8_gh_path') || 'nhaptat.txt'
+      };
+    }
+
+    // Save configurations to LocalStorage
+    function saveGhConfig() {
+      localStorage.setItem('z8_gh_token', document.getElementById('ghToken').value.trim());
+      localStorage.setItem('z8_gh_owner', document.getElementById('ghOwner').value.trim());
+      localStorage.setItem('z8_gh_repo', document.getElementById('ghRepo').value.trim());
+      localStorage.setItem('z8_gh_branch', document.getElementById('ghBranch').value.trim());
+      localStorage.setItem('z8_gh_path', document.getElementById('ghPath').value.trim());
+      showStatus('Đã lưu thông số cấu hình GitHub!', 'success');
+      applyConfigVisibility(true); // Auto-hide configuration panel after saving
+    }
+
+    // Apply visibility styles for GitHub Config panel
+    function applyConfigVisibility(shouldHide) {
+      const configCol = document.getElementById('githubConfigColumn');
+      const editorCol = document.getElementById('editorColumn');
+      const toggleConfigBtn = document.getElementById('toggleConfigBtn');
+      if (!configCol || !editorCol || !toggleConfigBtn) return;
+      
+      const span = toggleConfigBtn.querySelector('span');
+      if (shouldHide) {
+        configCol.classList.add('hidden');
+        editorCol.classList.remove('lg:col-span-2');
+        editorCol.classList.add('lg:col-span-3');
+        toggleConfigBtn.classList.remove('bg-emerald-700', 'text-white');
+        toggleConfigBtn.classList.add('bg-white/10', 'text-white');
+        if (span) {
+          span.innerText = window.innerWidth < 640 ? 'Cấu hình' : '⚙️ Hiện cấu hình';
+        }
+      } else {
+        configCol.classList.remove('hidden');
+        editorCol.classList.remove('lg:col-span-3');
+        editorCol.classList.add('lg:col-span-2');
+        toggleConfigBtn.classList.add('bg-emerald-700', 'text-white');
+        toggleConfigBtn.classList.remove('bg-white/10');
+        if (span) {
+          span.innerText = window.innerWidth < 640 ? 'Cấu hình' : '⚙️ Cấu hình GitHub';
+        }
+      }
+    }
+
+    // Populate configuration inputs
+    function populateConfigInputs() {
+      const config = getGhConfig();
+      document.getElementById('ghToken').value = config.token;
+      document.getElementById('ghOwner').value = config.owner;
+      document.getElementById('ghRepo').value = config.repo;
+      document.getElementById('ghBranch').value = config.branch;
+      document.getElementById('ghPath').value = config.path;
+    }
+
+    // Show top status banner
+    function showStatus(msg, type = 'info') {
+      const banner = document.getElementById('statusBanner');
+      banner.classList.remove('hidden', 'bg-emerald-100', 'border-emerald-300', 'text-emerald-800', 'dark:bg-emerald-950/40', 'dark:border-emerald-900/50', 'dark:text-emerald-400',
+                             'bg-red-100', 'border-red-300', 'text-red-800', 'dark:bg-red-950/40', 'dark:border-red-900/50', 'dark:text-red-400',
+                             'bg-blue-100', 'border-blue-300', 'text-blue-800', 'dark:bg-blue-950/40', 'dark:border-blue-900/50', 'dark:text-blue-400');
+      
+      if (type === 'success') {
+        banner.classList.add('bg-emerald-100', 'border-emerald-300', 'text-emerald-800', 'dark:bg-emerald-950/40', 'dark:border-emerald-900/50', 'dark:text-emerald-400');
+        alert(msg);
+      } else if (type === 'error') {
+        banner.classList.add('bg-red-100', 'border-red-300', 'text-red-800', 'dark:bg-red-950/40', 'dark:border-red-900/50', 'dark:text-red-400');
+        alert(msg);
+      } else {
+        banner.classList.add('bg-blue-100', 'border-blue-300', 'text-blue-800', 'dark:bg-blue-950/40', 'dark:border-blue-900/50', 'dark:text-blue-400');
+      }
+      banner.innerText = msg;
+      banner.classList.remove('hidden');
+      setTimeout(() => banner.classList.add('hidden'), 5000);
+    }
+
+    // Parse text shortcuts list to structured array
+    function parseShortcutsText(text) {
+      const lines = text.split('\n');
+      const list = [];
+      let idCounter = 0;
+      lines.forEach(line => {
+        const trimmed = line.trim();
+        if (!trimmed) return;
+        const index = trimmed.indexOf('=');
+        if (index > 0) {
+          const key = trimmed.substring(0, index).trim();
+          const value = trimmed.substring(index + 1).trim();
+          list.push({ id: idCounter++, key, value, isEditing: false });
+        }
+      });
+      return list;
+    }
+
+    // Convert structured array back to text
+    function stringifyShortcuts(list) {
+      return list.map(item => `${item.key}=${item.value}`).join('\n');
+    }
+
+    // Fetch shortcuts content from GitHub
+    async function syncFromGitHub() {
+      const config = getGhConfig();
+      showStatus("Đang đồng bộ dữ liệu từ GitHub...", "info");
+      
+      try {
+        const rawUrl = `https://raw.githubusercontent.com/${config.owner}/${config.repo}/refs/heads/${config.branch}/${config.path}?t=${Date.now()}`;
+        const response = await fetch(rawUrl);
+        if (!response.ok) throw new Error("Không thể tải file raw từ GitHub!");
+        const text = await response.text();
+        
+        shortcutsList = parseShortcutsText(text);
+        renderTable();
+        document.getElementById('rawTextArea').value = stringifyShortcuts(shortcutsList);
+        
+        await fetchFileSha();
+        showStatus("Đồng bộ dữ liệu thành công!", "success");
+      } catch (err) {
+        console.error("Fetch raw failed, trying API contents endpoint...", err);
+        showStatus("Fetch trực tiếp thất bại, đang thử kết nối qua GitHub API...", "warning");
+        await syncViaApi();
+      }
+    }
+
+    // Get current SHA via API
+    async function fetchFileSha() {
+      const config = getGhConfig();
+      const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${config.path}?ref=${config.branch}`;
+      const headers = {};
+      if (config.token) {
+        headers['Authorization'] = `token ${config.token}`;
+      }
+      
+      try {
+        const response = await fetch(url, { headers });
+        if (response.ok) {
+          const data = await response.json();
+          githubFileSha = data.sha;
+        }
+      } catch (e) {
+        console.error("Lỗi lấy SHA file:", e);
+      }
+    }
+
+    // Fetch data using GitHub REST API contents endpoint
+    async function syncViaApi() {
+      const config = getGhConfig();
+      const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${config.path}?ref=${config.branch}`;
+      const headers = {
+        'Accept': 'application/vnd.github.v3+json'
+      };
+      if (config.token) {
+        headers['Authorization'] = `token ${config.token}`;
+      }
+
+      try {
+        const response = await fetch(url, { headers });
+        if (!response.ok) throw new Error(`Lỗi kết nối GitHub API (${response.status})`);
+        
+        const data = await response.json();
+        githubFileSha = data.sha;
+        
+        const contentDecoded = decodeURIComponent(escape(atob(data.content.replace(/\s/g, ''))));
+        shortcutsList = parseShortcutsText(contentDecoded);
+        renderTable();
+        document.getElementById('rawTextArea').value = stringifyShortcuts(shortcutsList);
+        
+        showStatus("Đồng bộ qua API thành công!", "success");
+      } catch (err) {
+        console.error("Sync via API failed:", err);
+        showStatus("Đồng bộ thất bại: " + err.message, "error");
+      }
+    }
+
+    // Commit changes to GitHub
+    async function commitToGitHub() {
+      const config = getGhConfig();
+      if (!config.token) {
+        applyConfigVisibility(false);
+        showStatus("Vui lòng điền GitHub Token (PAT) để lưu dữ liệu!", "error");
+        return;
+      }
+
+      const commitBtn = document.getElementById('commitBtn');
+      const spinner = document.getElementById('commitSpinner');
+      const commitMessage = document.getElementById('commitMsg').value.trim() || "Cập nhật nhaptat.txt";
+
+      commitBtn.disabled = true;
+      spinner.classList.remove('hidden');
+
+      try {
+        if (currentMode === 'raw') {
+          const rawText = document.getElementById('rawTextArea').value;
+          shortcutsList = parseShortcutsText(rawText);
+          renderTable();
+        }
+
+        const contentText = stringifyShortcuts(shortcutsList);
+        const base64Content = btoa(unescape(encodeURIComponent(contentText)));
+
+        const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${config.path}`;
+        const body = {
+          message: commitMessage,
+          content: base64Content,
+          branch: config.branch
+        };
+        if (githubFileSha) {
+          body.sha = githubFileSha;
+        }
+
+        const response = await fetch(url, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `token ${config.token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/vnd.github.v3+json'
+          },
+          body: JSON.stringify(body)
+        });
+
+        if (!response.ok) {
+          const errData = await response.json();
+          throw new Error(errData.message || response.statusText);
+        }
+
+        const resData = await response.json();
+        githubFileSha = resData.content.sha;
+
+        showStatus("Đã đẩy dữ liệu mới lên GitHub thành công!", "success");
+        renderTable();
+      } catch (err) {
+        console.error("Commit failed:", err);
+        showStatus("Lưu thất bại: " + err.message, "error");
+      } finally {
+        commitBtn.disabled = false;
+        spinner.classList.add('hidden');
+      }
+    }
+
+    // Render Shortcuts List to Excel Grid Table / Responsive Mobile Cards
+    function renderTable() {
+      const tbody = document.getElementById('shortcutsTableBody');
+      const searchVal = document.getElementById('tableSearch').value.toLowerCase().trim();
+      const noData = document.getElementById('noDataMessage');
+      
+      tbody.innerHTML = "";
+      
+      let filtered = shortcutsList;
+      if (searchVal) {
+        filtered = shortcutsList.filter(item => 
+          item.key.toLowerCase().includes(searchVal) || 
+          item.value.toLowerCase().includes(searchVal)
+        );
+      }
+
+      if (filtered.length === 0) {
+        noData.classList.remove('hidden');
+        return;
+      }
+      noData.classList.add('hidden');
+
+      filtered.forEach((item, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 transition-colors flex flex-col sm:table-row p-2.5 sm:p-0 border-b border-slate-200 dark:border-slate-700 sm:border-b-0 space-y-1.5 sm:space-y-0";
+        
+        if (item.isEditing) {
+          // Inline Editing Mode
+          tr.innerHTML = `
+            <td class="py-1 px-2 text-center excel-row-num hidden sm:table-cell">${idx + 1}</td>
+            <td class="py-1 sm:py-1.5 px-1 sm:px-3 block sm:table-cell">
+              <label class="block text-[10px] font-bold text-slate-400 sm:hidden mb-0.5 uppercase tracking-wider">Từ khóa (Key):</label>
+              <input type="text" id="editKey-${item.id}" value="${item.key}" class="w-full border border-slate-300 dark:border-slate-600 rounded px-2.5 py-1.5 bg-white dark:bg-dark-700 font-mono text-xs outline-none focus:ring-1 focus:ring-excel-800">
+            </td>
+            <td class="py-1 sm:py-1.5 px-1 sm:px-3 block sm:table-cell">
+              <label class="block text-[10px] font-bold text-slate-400 sm:hidden mb-0.5 uppercase tracking-wider">Dãy số (Value):</label>
+              <input type="text" id="editVal-${item.id}" value="${item.value}" class="w-full border border-slate-300 dark:border-slate-600 rounded px-2.5 py-1.5 bg-white dark:bg-dark-700 font-mono text-xs outline-none focus:ring-1 focus:ring-excel-800">
+            </td>
+            <td class="py-1 sm:py-1.5 px-1 sm:px-3 text-right space-x-1 flex justify-end items-center block sm:table-cell pt-1 sm:pt-0">
+              <button onclick="saveEdit(${item.id})" class="px-3 py-1.5 sm:py-1 bg-excel-800 hover:bg-excel-900 text-white rounded text-xs sm:text-[11px] font-bold flex items-center gap-1 active:scale-95"><i class="fa-solid fa-check"></i> Lưu</button>
+              <button onclick="cancelEdit(${item.id})" class="px-3 py-1.5 sm:py-1 bg-slate-400 hover:bg-slate-500 text-white rounded text-xs sm:text-[11px] font-bold active:scale-95">Hủy</button>
+            </td>
+          `;
+        } else {
+          // Display Mode
+          tr.innerHTML = `
+            <td class="py-1.5 px-2 text-center excel-row-num hidden sm:table-cell">${idx + 1}</td>
+            <td class="py-0.5 sm:py-1.5 px-1 sm:px-3 font-mono font-bold text-excel-800 dark:text-emerald-400 flex sm:table-cell justify-between items-center">
+              <span class="flex items-center gap-1.5">
+                <span class="sm:hidden text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-dark-700 text-slate-500 font-mono">#${idx + 1}</span>
+                <span class="text-sm sm:text-xs">${item.key}</span>
+              </span>
+              <div class="sm:hidden flex gap-1">
+                <button onclick="startEdit(${item.id})" class="px-2.5 py-1 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 hover:bg-emerald-200 rounded text-xs font-bold transition-colors flex items-center gap-1 active:scale-95"><i class="fa-solid fa-pen-to-square"></i> Sửa</button>
+                <button onclick="deleteItem(${item.id})" class="px-2.5 py-1 bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 hover:bg-rose-200 rounded text-xs font-bold transition-colors flex items-center gap-1 active:scale-95"><i class="fa-solid fa-trash"></i> Xóa</button>
+              </div>
+            </td>
+            <td class="py-0.5 sm:py-1.5 px-1 sm:px-3 font-mono break-all text-slate-700 dark:text-slate-300 block sm:table-cell text-xs leading-relaxed">${item.value}</td>
+            <td class="py-1.5 px-3 text-right space-x-1 hidden sm:table-cell">
+              <button onclick="startEdit(${item.id})" class="px-2 py-1 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 hover:bg-emerald-200 rounded text-[11px] font-bold transition-colors inline-flex items-center gap-1 active:scale-95"><i class="fa-solid fa-pen-to-square"></i> Sửa</button>
+              <button onclick="deleteItem(${item.id})" class="px-2 py-1 bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 hover:bg-rose-200 rounded text-[11px] font-bold transition-colors inline-flex items-center gap-1 active:scale-95"><i class="fa-solid fa-trash"></i> Xóa</button>
+            </td>
+          `;
+        }
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Toggle Inline Edit Mode
+    window.startEdit = function(id) {
+      const item = shortcutsList.find(x => x.id === id);
+      if (item) {
+        item.isEditing = true;
+        renderTable();
+      }
+    };
+
+    // Save Inline Edit
+    window.saveEdit = function(id) {
+      const item = shortcutsList.find(x => x.id === id);
+      if (!item) return;
+      const keyVal = document.getElementById(`editKey-${id}`).value.trim();
+      const valVal = document.getElementById(`editVal-${id}`).value.trim();
+
+      if (!keyVal || !valVal) {
+        alert("Từ khóa và Dãy số không được để trống!");
+        return;
+      }
+
+      item.key = keyVal;
+      item.value = valVal;
+      item.isEditing = false;
+      renderTable();
+      document.getElementById('rawTextArea').value = stringifyShortcuts(shortcutsList);
+    };
+
+    // Cancel Inline Edit
+    window.cancelEdit = function(id) {
+      const item = shortcutsList.find(x => x.id === id);
+      if (item) {
+        item.isEditing = false;
+        renderTable();
+      }
+    };
+
+    // Delete Shortcut Item
+    window.deleteItem = function(id) {
+      if (confirm("Bạn có chắc muốn xóa định nghĩa viết tắt này không?")) {
+        shortcutsList = shortcutsList.filter(x => x.id !== id);
+        renderTable();
+        document.getElementById('rawTextArea').value = stringifyShortcuts(shortcutsList);
+      }
+    };
+
+    // Attach Event Listeners on DOM Load
+    document.addEventListener("DOMContentLoaded", () => {
+      populateConfigInputs();
+      
+      const config = getGhConfig();
+      if (!config.token) {
+        applyConfigVisibility(false);
+      } else {
+        applyConfigVisibility(true);
+      }
+
+      // Dark Mode Toggle
+      const htmlElement = document.documentElement;
+      const darkModeToggle = document.getElementById('darkModeToggle');
+      if (localStorage.getItem('theme') === 'dark') {
+        htmlElement.classList.add('dark');
+      } else {
+        htmlElement.classList.remove('dark');
+      }
+
+      darkModeToggle.addEventListener('click', () => {
+        if (htmlElement.classList.contains('dark')) {
+          htmlElement.classList.remove('dark');
+          localStorage.setItem('theme', 'light');
+        } else {
+          htmlElement.classList.add('dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+
+      // Toggle GitHub Config Panel
+      document.getElementById('toggleConfigBtn').addEventListener('click', () => {
+        const configCol = document.getElementById('githubConfigColumn');
+        const isHidden = configCol.classList.contains('hidden');
+        applyConfigVisibility(!isHidden);
+      });
+
+      // Save Config Button
+      document.getElementById('saveConfigBtn').addEventListener('click', saveGhConfig);
+
+      // Toggle Password Visibility
+      document.getElementById('toggleTokenVisibility').addEventListener('click', () => {
+        const tokenInput = document.getElementById('ghToken');
+        tokenInput.type = tokenInput.type === 'password' ? 'text' : 'password';
+      });
+
+      // Mode Switcher Tabs
+      const tabTableBtn = document.getElementById('tabTableBtn');
+      const tabRawBtn = document.getElementById('tabRawBtn');
+      const tableModeView = document.getElementById('tableModeView');
+      const rawModeView = document.getElementById('rawModeView');
+
+      tabTableBtn.addEventListener('click', () => {
+        currentMode = 'table';
+        tabTableBtn.className = "text-xs font-bold bg-white dark:bg-dark-800 text-excel-800 dark:text-emerald-400 border-t-2 border-excel-800 dark:border-emerald-400 border-x border-slate-300 dark:border-slate-600 px-2.5 sm:px-3 py-1.5 rounded-t-md focus:outline-none flex items-center gap-1.5";
+        tabRawBtn.className = "text-xs font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 px-2.5 sm:px-3 py-1.5 rounded-t-md focus:outline-none flex items-center gap-1.5 border-t-2 border-transparent";
+        
+        // Sync raw text changes to list
+        const rawText = document.getElementById('rawTextArea').value;
+        shortcutsList = parseShortcutsText(rawText);
+        renderTable();
+
+        tableModeView.classList.remove('hidden');
+        rawModeView.classList.add('hidden');
+      });
+
+      tabRawBtn.addEventListener('click', () => {
+        currentMode = 'raw';
+        tabRawBtn.className = "text-xs font-bold bg-white dark:bg-dark-800 text-excel-800 dark:text-emerald-400 border-t-2 border-excel-800 dark:border-emerald-400 border-x border-slate-300 dark:border-slate-600 px-2.5 sm:px-3 py-1.5 rounded-t-md focus:outline-none flex items-center gap-1.5";
+        tabTableBtn.className = "text-xs font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 px-2.5 sm:px-3 py-1.5 rounded-t-md focus:outline-none flex items-center gap-1.5 border-t-2 border-transparent";
+
+        document.getElementById('rawTextArea').value = stringifyShortcuts(shortcutsList);
+        tableModeView.classList.add('hidden');
+        rawModeView.classList.remove('hidden');
+      });
+
+      // Search Filter
+      document.getElementById('tableSearch').addEventListener('input', renderTable);
+
+      // Inline Add Form Controls
+      const showAddFormBtn = document.getElementById('showAddFormBtn');
+      const addFormContainer = document.getElementById('addFormContainer');
+      const cancelAddBtn = document.getElementById('cancelAddBtn');
+      const submitAddBtn = document.getElementById('submitAddBtn');
+
+      showAddFormBtn.addEventListener('click', () => {
+        addFormContainer.classList.remove('hidden');
+        document.getElementById('newKey').focus();
+      });
+
+      cancelAddBtn.addEventListener('click', () => {
+        addFormContainer.classList.add('hidden');
+        document.getElementById('newKey').value = '';
+        document.getElementById('newValue').value = '';
+      });
+
+      submitAddBtn.addEventListener('click', () => {
+        const keyVal = document.getElementById('newKey').value.trim();
+        const valVal = document.getElementById('newValue').value.trim();
+
+        if (!keyVal || !valVal) {
+          alert("Từ khóa và Dãy số không được để trống!");
+          return;
+        }
+
+        const maxId = shortcutsList.reduce((max, item) => item.id > max ? item.id : max, -1);
+        shortcutsList.push({ id: maxId + 1, key: keyVal, value: valVal, isEditing: false });
+        
+        renderTable();
+        document.getElementById('rawTextArea').value = stringifyShortcuts(shortcutsList);
+
+        document.getElementById('newKey').value = '';
+        document.getElementById('newValue').value = '';
+        addFormContainer.classList.add('hidden');
+      });
+
+      // Synchronize GitHub & Commit Buttons
+      document.getElementById('fetchBtn').addEventListener('click', syncFromGitHub);
+      document.getElementById('commitBtn').addEventListener('click', commitToGitHub);
+
+      // Initial Sync
+      syncFromGitHub();
+    });
+  </script>
+</body>
+</html>
